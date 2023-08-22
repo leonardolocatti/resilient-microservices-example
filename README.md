@@ -107,3 +107,33 @@ docker run --rm --add-host=host.docker.internal:host-gateway -i grafana/k6 run -
 
 Esse comando executará um teste chamando o endpoint /greetings/abc do Serviço A simulando um esgotamento de recursos em C, fazendo com que o serviço B comece a tomar timeout,
 ocasionando problemas em A também.
+
+### Resultados sem circuit breaker
+
+Podemos observar que conforme a carga aumenta o tempo de resposta sobe e os serviços começam a degradar até o ponto que passam a responder 100% das vezes com erro
+
+![Tempo de resposta no serviço B](https://github.com/leonardolocatti/resilient-microservices-example/blob/develop/images/request-duration-service-b-timeout.png)
+Tempo de resposta no serviço B
+
+![Status HTTP das requisições no serviço B](https://github.com/leonardolocatti/resilient-microservices-example/blob/develop/images/http-status-service-b-timeout.png)
+Status HTTP das requisições no serviço B
+
+Olhando para o resultado do teste de carga executado sobre o endpoint /greetings/abc do serviço A obtemos apenas 24% de sucesso nas requisições
+
+![Resultado do teste de carga](https://github.com/leonardolocatti/resilient-microservices-example/blob/develop/images/load-test-result-service-a-timeout.png)
+Resultado do teste de carga
+
+### Resultados com circuit breaker
+
+Podemos observar que conforme a carga aumenta o tempo de resposta sobe e os serviços começam a degradar, mas o circuit breaker entra em ação abrindo o circuito e deixando os serviços se recuperarem
+
+![Tempo de resposta no serviço B](https://github.com/leonardolocatti/resilient-microservices-example/blob/develop/images/request-duration-service-b-timeout-circuit-breaker.png)
+Tempo de resposta no serviço B
+
+![Status HTTP das requisições no serviço B](https://github.com/leonardolocatti/resilient-microservices-example/blob/develop/images/http-status-service-b-timeout-circuit-breaker.png)
+Status HTTP das requisições no serviço B
+
+Olhando para o resultado do teste de carga executado sobre o endpoint /greetings/abc do serviço A obtemos agora 85% de sucesso nas requisições
+
+![Resultado do teste de carga](https://github.com/leonardolocatti/resilient-microservices-example/blob/develop/images/load-test-result-service-a-timeout-circuit-breaker.png)
+Resultado do teste de carga
