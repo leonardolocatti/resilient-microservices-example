@@ -102,15 +102,15 @@ management:
       probability: 1.0
 ```
 Para realizar o teste podemos fazer uma requisição para [http://localhost:8001/service-a/greetings/ac](http://localhost:8001/service-a/greetings/ac), 
-depois acessar o Zipkin que subimos anteriormente e buscar os traces. Com isso podemos ver o trace da requisição que acabamos de fazer. Clicando
-em "show", são exibidos mais detalhes e podemos ver que o serviço A chamou o serviço C e quanto tempo demorou cada etapa do trace
+depois acessar o Zipkin que subimos anteriormente e buscar os traces. Com isso podemos ver o trace da requisição que acabamos de fazer.
+![Traces](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/trace-results.png)
 
-***ADD imagem do trace (traces_result)***
-***ADD imagem dos detalhes do trace (trace_show)***
+Clicando
+em "show", são exibidos mais detalhes e podemos ver que o serviço A chamou o serviço C e quanto tempo demorou cada etapa do trace
+![Detalhes do Trace](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/trace-show.png)
 
 Clicando em "Dependencies" e depois em "RUN QUERY" podemos ver o um diagrama com as dependências construído a partir dos traces
-
-***ADD imagem do grafico de dependencia (dependency_view)***
+![Diagrama de dependências](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/dependency-view.png)
 
 ## Configurando o Prometheus no Serviço C
 Primeiro vamos adicionar a dependencia no pom.xml
@@ -132,8 +132,7 @@ management:
 ```
 Com isso quando acessamos o [http://localhost:9003/actuator/health](http://localhost:9003/actuator/health) vemos as métricas no
 formato que o Prometheus espera
-
-***ADD imagem do actuator prometheus (actuator_prometheus)***
+![Métricas do Actuator](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/actuator-prometheus.png)
 
 Por fim vamos configurar o Prometheus para coletar as métricas nesse endpoint. No arquivo de configuração do prometheus adicionamos
 ```yaml
@@ -150,8 +149,7 @@ Vamos parar o container do Prometheus rodando com o comando e recriá-lo com as 
 docker stop prometheus && docker compose up -d --build prometheus
 ```
 Agora podemos acessar o Prometheus em http://localhost:9090 e fazer a consulta pra verificar se deu tudo certo
-
-***ADD imagem up do prometheus (prometheus-service-c-up)***
+![Resultado da consulta no Prometheus](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/prometheus-service-c-up.png)
 
 ## Configurando o Grafana
 A primeira coisa que faremos é adicionar o Prometheus no Grafana, para isso basta entrarmos no menu Connections -> Datasource e clicar em "Add new data source"
@@ -167,10 +165,11 @@ Vamos executar o seguinte comando para rodar um script de teste de carga utiliza
 ```shell
 docker run --rm --add-host=host.docker.internal:host-gateway -e K6_PROMETHEUS_RW_SERVER_URL=http://host.docker.internal:9090/api/v1/write -e K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true -e K6_PROMETHEUS_RW_PUSH_INTERVAL=5 -i grafana/k6 run -o experimental-prometheus-rw --tag testid=circuit-breaker - <circuit-breaker-script.js
 ```
-***ADD imagem do teste sem o circuit breaker***
 Com os resultados dos testes podemos perceber que o o tempo de resposta começa a aumentar até o ponto em que a aplicação começa a responder com erros, obtendo uma taxa de sucesso de apenas 33%
-***ADD imagem do trace com timeout
+![Resultado do teste sem o circuit breaker](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/circuit-breaker-off.png)
+
 No trace podemos perceber que o serviço B demorou muito tempo para conseguir responder o serviço A tomou um timeout
+![Trace com timeout](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/trace-timeout-circuit-breaker-off.png)
 
 ### Adicionando um circuit breaker em A
 Para proteger nossas aplicações desse cenário podemos utilizar um circuit breaker
@@ -211,11 +210,13 @@ Vamos executar o script novamente
 ```shell
 docker run --rm --add-host=host.docker.internal:host-gateway -e K6_PROMETHEUS_RW_SERVER_URL=http://host.docker.internal:9090/api/v1/write -e K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true -e K6_PROMETHEUS_RW_PUSH_INTERVAL=5 -i grafana/k6 run -o experimental-prometheus-rw --tag testid=circuit-breaker - <circuit-breaker-script.js
 ```
-***ADD imagem do teste com o circuit breaker***
 Com os resultados dos testes podemos perceber que o o tempo de resposta novamente começa a aumentar, mas agora nossa taxa de erro se mantém mais baixa porque o circuit breaker
 identifica que o serviço B não está saudável e não envia requisições pra ele por um período. Nesse cenário obtemos uma taxa de sucesso de 91%
-***ADD imagem do trace com o circuit breaker aberto
+![Resultado do teste com o circuit breaker](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/circuit-breaker-on.png)
+
 No trace podemos ver que não foi realizada chamada para o serviço B porque o circuito estava aberto
+![Trace com o circuito aberto](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/trace-circuit-breaker-open.png)
+
 
 ### Adicionando um Fallback no Circuit Breaker
 Somente com o circuit breaker que implementamos anteriormente já obtemos um ganho muito bom, mas caso a exista algum outro 
@@ -238,22 +239,22 @@ Vamos executar o script novamente
 ```shell
 docker run --rm --add-host=host.docker.internal:host-gateway -e K6_PROMETHEUS_RW_SERVER_URL=http://host.docker.internal:9090/api/v1/write -e K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true -e K6_PROMETHEUS_RW_PUSH_INTERVAL=5 -i grafana/k6 run -o experimental-prometheus-rw --tag testid=circuit-breaker - <circuit-breaker-script.js
 ```
-***ADD imagem do teste com o circuit breaker com fallback***
 Com os resultados dos testes vemos que agora obtemos 100% de sucesso. Isso ocorre porque o serviço C está lá para atender as requisições que falharam em B que
 foram direto pra ele quando o circuito estava aberto
-identifica que o serviço B não está saudável e não envia requisições pra ele por um período. Nesse cenário obtemos uma taxa de sucesso de 91%
-***ADD imagem de dependencia quando falha
+![Resultado do teste com o circuit breaker e fallback](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/circuit-breaker-on-fallback.png)
+
 No diagrama de dependências podemos ver que algumas requisições agora são encaminhadas para o serviço C
+![Diagrama de dependências com o serviço A chamando B e C](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/dependency-view-circuit-breaker-fallback.png)
 
 ## Bulkhead
 Vamos executar o seguinte comando para rodar o script de teste de carga que será utilizado para o bulkhead
 ```shell
 docker run --rm --add-host=host.docker.internal:host-gateway -e K6_PROMETHEUS_RW_SERVER_URL=http://host.docker.internal:9090/api/v1/write -e K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true -e K6_PROMETHEUS_RW_PUSH_INTERVAL=5 -i grafana/k6 run -o experimental-prometheus-rw --tag testid=bulkhead - <bulkhead-script.js
 ```
-***ADD imagem do teste sem bulkhead***
 Com os resultados podemos observar que com o passar do tempo o endpoint do serviço B que estava com problemas começou a afetar
 o serviço A no consumo do serviço C. Isso fez com que aparecessem timeouts no endpoint /congratulations/ac. Desconsiderando
 as chamadas para o serviço B que está com problemas, obtemos uma taxa de suceço de apenas 34%
+![Resultado do teste sem bulkhead](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/bulkhead-off.png)
 
 ### Adicionando Bulkhead no serviço A
 Vamos até a classe Client do serviço A e vamos incluir o bulkhead
@@ -276,9 +277,10 @@ Vamos executar novamente o script
 ```shell
 docker run --rm --add-host=host.docker.internal:host-gateway -e K6_PROMETHEUS_RW_SERVER_URL=http://host.docker.internal:9090/api/v1/write -e K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true -e K6_PROMETHEUS_RW_PUSH_INTERVAL=5 -i grafana/k6 run -o experimental-prometheus-rw --tag testid=bulkhead - <bulkhead-script.js
 ```
-***ADD imagem do teste com bulkhead***
 Com os resultados podemos observar que agora as chamadas do endpoint /congratulations/ac que vão para o serviço C continuam funcionando
 sem problema algum. Isso acontece porque o bulkhead está limitando a quantidade de recursos que a aplicação pode utilizar no consumo de B.
-***ADD imagem do trace com o bloqueio de recurso***
+![Resultado do teste com bulkhead](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/bulkhead-on.png)
+
 Podemos comprovar a atuação do bulkhead pelo trace, onde conseguimos ver que a requisição não foi enviada para B porque o 
 bulkhead já estava cheio
+![Trace com bulkhead cheio](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/trace-bulkhead-full.png)
