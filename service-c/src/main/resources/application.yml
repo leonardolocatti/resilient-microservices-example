@@ -5,3 +5,7 @@ server:
 spring:
   application:
     name: @artifactId@
+management:
+  tracing:
+    sampling:
+      probability: 1.0
