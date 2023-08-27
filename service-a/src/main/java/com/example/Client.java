@@ -1,5 +1,6 @@
 package com.example;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ public class Client {
     return congratulationsFromC();
   }
 
+  @Bulkhead(name = "service-b")
   public String congratulationsFromB() {
     return restTemplate.getForObject(SERVICE_B_BASE_URL + "/congratulations/b", String.class);
   }

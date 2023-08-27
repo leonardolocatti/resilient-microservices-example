@@ -33,3 +33,8 @@ resilience4j:
         slowCallRateThreshold: 20
         permittedNumberOfCallsInHalfOpenState: 5
         waitDurationInOpenState: 300ms
+  bulkhead:
+    instances:
+      service-b:
+        maxWaitDuration: 100ms
+        maxConcurrentCalls: 28
