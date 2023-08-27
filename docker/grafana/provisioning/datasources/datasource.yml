@@ -1,0 +1,10 @@
+apiVersion: 1
+datasources:
+  - name: Prometheus K6 - Provisioned
+    type: prometheus
+    uid: prometheus-k6-provisioned
+    access: proxy
+    url: http://prometheus:9090
+    jsonData:
+      httpMethod: GET
+      timeInterval: 5s
