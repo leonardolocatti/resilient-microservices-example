@@ -1,0 +1,26 @@
+server:
+  port: 8002
+  servlet:
+    context-path: /service-b
+  tomcat:
+    threads:
+      max: 10
+spring:
+  application:
+    name: @artifactId@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+  server:
+    port: 9002
+  tracing:
+    sampling:
+      probability: 1.0

@@ -1,0 +1,26 @@
+server:
+  port: 8001
+  servlet:
+    context-path: /service-a
+  tomcat:
+    threads:
+      max: 40
+spring:
+  application:
+    name: @artifactId@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+  server:
+    port: 9001
+  tracing:
+    sampling:
+      probability: 1.0
