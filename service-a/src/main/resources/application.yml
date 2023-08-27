@@ -24,3 +24,12 @@ management:
   tracing:
     sampling:
       probability: 1.0
+resilience4j:
+  circuitbreaker:
+    instances:
+      service-b:
+        slidingWindowSize: 25
+        slowCallDurationThreshold: 2150ms
+        slowCallRateThreshold: 20
+        permittedNumberOfCallsInHalfOpenState: 5
+        waitDurationInOpenState: 300ms

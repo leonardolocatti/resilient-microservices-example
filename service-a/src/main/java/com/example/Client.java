@@ -1,5 +1,6 @@
 package com.example;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -11,8 +12,13 @@ public class Client {
 
   @Autowired private RestTemplate restTemplate;
 
+  @CircuitBreaker(name = "service-b", fallbackMethod = "greetingsFromBFallback")
   public String greetingsFromB() {
     return restTemplate.getForObject(SERVICE_B_BASE_URL + "/greetings/b", String.class);
+  }
+
+  public String greetingsFromBFallback(Exception e) {
+    return congratulationsFromC();
   }
 
   public String congratulationsFromB() {
