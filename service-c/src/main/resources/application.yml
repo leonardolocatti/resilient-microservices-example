@@ -9,3 +9,9 @@ management:
   tracing:
     sampling:
       probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  server:
+    port: 9003

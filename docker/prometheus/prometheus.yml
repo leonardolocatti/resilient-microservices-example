@@ -16,3 +16,10 @@ scrape_configs:
           - host.docker.internal:9002
         labels:
           application: service-b
+  - job_name: service-c
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:9003
+        labels:
+          application: service-c
