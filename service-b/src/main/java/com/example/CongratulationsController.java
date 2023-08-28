@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/congratulations")
 public class CongratulationsController {
-  private static final long DELAY_RESPONSE_MS = 3000;
+  private static final long DELAY_RESPONSE_MS = 2800;
   private static final String CONGRATULATIONS = "Congratulations from service B";
 
   @GetMapping("/b")
