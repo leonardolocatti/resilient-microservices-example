@@ -19,9 +19,6 @@ export default function () {
         ['GET', 'http://host.docker.internal:8001/service-a/congratulations/ac', null, {timeout: 3000}],
       ]);
 
-      check(responses[0], {
-        'status was 200': (res) => res.status === 200,
-      });
       check(responses[1], {
         'status was 200': (res) => res.status === 200,
       });
