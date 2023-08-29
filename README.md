@@ -130,7 +130,7 @@ management:
   server:
     port: 9003
 ```
-Com isso quando acessamos o [http://localhost:9003/actuator/health](http://localhost:9003/actuator/health) vemos as métricas no
+Com isso quando acessamos o [http://localhost:9003/actuator/prometheus](http://localhost:9003/actuator/health) vemos as métricas no
 formato que o Prometheus espera
 ![Métricas do Actuator](https://github.com/leonardolocatti/resilient-microservices-example/blob/initial/images/actuator-prometheus.png)
 
